@@ -56,4 +56,49 @@ describe("GltfStore", () => {
 
     expect(store.gltf).toBeUndefined();
   });
+
+  it("should load external glTF from url param", async () => {
+    mockLocationSearch("?url=https://example.com/model.glb");
+
+    const store = new GltfStore();
+    store.setGltfs(gltfs);
+
+    expect(store.gltf).toBeDefined();
+    expect(store.gltf?.filePath).toBe("https://example.com/model.glb");
+    expect(store.gltf?.name).toBe("model");
+    expect(store.gltf?.description).toBe(
+      "Loaded from: https://example.com/model.glb",
+    );
+  });
+
+  it("should extract filename correctly from complex URLs", async () => {
+    mockLocationSearch("?url=https://example.com/path/to/MyModel.glb");
+
+    const store = new GltfStore();
+    store.setGltfs(gltfs);
+
+    expect(store.gltf).toBeDefined();
+    expect(store.gltf?.name).toBe("MyModel");
+  });
+
+  it("should handle invalid URLs gracefully", async () => {
+    mockLocationSearch("?url=not-a-valid-url");
+
+    const store = new GltfStore();
+    store.setGltfs(gltfs);
+
+    expect(store.gltf).toBeDefined();
+    expect(store.gltf?.name).toBe("External GLB");
+    expect(store.gltf?.filePath).toBe("not-a-valid-url");
+  });
+
+  it("should prioritize url param over gltf param", async () => {
+    mockLocationSearch("?gltf=DamagedHelmet&url=https://example.com/model.glb");
+
+    const store = new GltfStore();
+    store.setGltfs(gltfs);
+
+    expect(store.gltf).toBeDefined();
+    expect(store.gltf?.filePath).toBe("https://example.com/model.glb");
+  });
 });
