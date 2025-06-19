@@ -56,8 +56,16 @@ export class PlayCanvasGltfLoader {
     return new Promise<pc.Asset | undefined>((resolve, reject) => {
       const { assets } = this._app;
 
-      const fileUrl = fileName ? url : pc.path.join("../..", url);
-      const assetName = pc.path.getBasename(fileName || fileUrl);
+      // Check if this is an external URL (http/https)
+      const isExternalUrl =
+        url.startsWith("http://") || url.startsWith("https://");
+      const fileUrl = fileName
+        ? url
+        : isExternalUrl
+        ? url
+        : pc.path.join("../..", url);
+      const assetName =
+        pc.path.getBasename(fileName || fileUrl) || "external.glb";
 
       let asset = assets.getByUrl(fileUrl);
       if (!asset) {
